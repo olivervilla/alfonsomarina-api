@@ -14,9 +14,12 @@ class DepartmentBase(BaseModel):
 class DepartmentCreate(DepartmentBase):
     pass
 
+class DepartmentUpdate(DepartmentBase):
+    score: Optional[float]
+    name: Optional[str]
+
 class Department(DepartmentBase):
     id: int
-    name: str
     score: Optional[float] = None
 
     class Config:
@@ -58,11 +61,16 @@ class TeammateBase(BaseModel):
     # badges: List[Badge]
     # comments: List[CommentTeammate]
 
-
 class TeammateCreate(TeammateBase):
     password: str
     # score: Optional[float] = 0.0
 
+class TeammateUpdate(BaseModel):
+    firstname: Optional[str]
+    lastname: Optional[str]
+    age: Optional[int]
+    department_id: Optional[int]
+    score: Optional[float]
 
 class Teammate(TeammateBase):
     class Config:
