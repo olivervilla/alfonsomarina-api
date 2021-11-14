@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 
+from collections import Counter
+
 import models
 import schemas
 
@@ -92,3 +94,61 @@ def delete_department(db: Session, department_id: int):
     db.delete(db_department)
     db.commit()
     return True
+
+
+# ---------------------------------------------
+#   RATING.USER
+# ---------------------------------------------
+def create_rating_user(db: Session, rating_user: models.RatingTeammateCreate):
+    db_rating_user = schemas.RatingHistoryTeammate(**rating_user.dict(exclude_unset=True))
+    db.add(db_rating_user)
+    db.commit()
+    db.refresh(db_rating_user)
+    return db_rating_user
+
+
+def read_rating_user_all(db: Session):
+    return db.query(schemas.RatingHistoryTeammate).all()
+
+
+def read_rating_user_by_id(db: Session, user_id: int = None):
+    ratings = db.query(schemas.RatingHistoryTeammate).filter(schemas.RatingHistoryTeammate.teammate_id == user_id).all()
+    if not len(ratings):
+        return None
+    
+    # TODO: use db queries
+    avg_score = sum([rating.score for rating in ratings]) / len(ratings)
+    counter_badges = Counter([rating.badge.name for rating in ratings if rating.badge])
+
+    return models.RatingTeammateAgg(avg_score=avg_score, ratings=ratings, counter_badges=counter_badges)
+
+
+# ---------------------------------------------
+#   RATING.DEPARTMENT
+# ---------------------------------------------
+def create_rating_department(db: Session, rating_department: models.RatingDepartmentCreate):
+    db_rating_department = schemas.RatingHistoryDepartment(**rating_department.dict(exclude_unset=True))
+    db.add(db_rating_department)
+    db.commit()
+    db.refresh(db_rating_department)
+    return db_rating_department
+
+
+def read_rating_department_all(db: Session):
+    return db.query(schemas.RatingHistoryDepartment).all()
+
+
+def read_rating_department_by_id(db: Session, department_id: int):
+    ratings = db.query(schemas.RatingHistoryDepartment).filter(schemas.RatingHistoryDepartment.department_id == department_id).all()
+    if not len(ratings):
+        return None
+    
+    avg_score = sum([rating.score for rating in ratings]) / len(ratings)
+
+    return models.RatingDepartmentAgg(avg_score=avg_score, ratings=ratings)
+
+# ---------------------------------------------
+#   BADGE
+# ---------------------------------------------
+def read_badge(db: Session, badge_id: int = None):
+    return db.query(schemas.Badges).filter(schemas.Badges.id == badge_id).first()

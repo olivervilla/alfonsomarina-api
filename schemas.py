@@ -16,12 +16,10 @@ class Teammates(Base):
     lastname = Column(String)
     age = Column(Integer, nullable=True)
     department_id = Column(Integer, ForeignKey("departments.id"))
-    score = Column(Float, nullable=True) # relationship? so calculate avg
     password = Column(String)
 
     department = relationship("Departments", back_populates="teammate", uselist=False)
-    # badges = relationship("BadgesHistory", back_populates="badges_hist")
-    # comments = relationship("BadgesHistory", back_populates="badges_hist")
+    ratings = relationship("RatingHistoryTeammate", back_populates="teammate")
 
 
 # TODO: score has to be calculated, relationship?
@@ -30,17 +28,45 @@ class Departments(Base):
 
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     name = Column(String)
-    score = Column(Float, nullable=True)
 
     teammate = relationship("Teammates", back_populates="department", uselist=False)
+    ratings = relationship("RatingHistoryDepartment", back_populates="department")
 
 
-# class Badges(Base):
-#     __tablename__ = "badges"
+class RatingHistoryTeammate(Base):
+    __tablename__ = "rating_hist_teammate"
+    
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    datetime = Column(DateTime, server_default=func.now())
+    teammate_id = Column(Integer, ForeignKey("teammates.id"))
+    score = Column(Float)
+    comment = Column(String, nullable=True)
+    badge_id = Column(Integer, ForeignKey("badges.id"), nullable=True)
+    
+    badge = relationship("Badges", back_populates="rating", uselist=False)
+    teammate = relationship("Teammates", back_populates="ratings", uselist=False)
 
-#     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
-#     name = Column(String)
-#     value = Column(Integer)
+
+class RatingHistoryDepartment(Base):
+    __tablename__ = "rating_hist_department"
+
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    datetime = Column(DateTime, server_default=func.now())
+    department_id = Column(Integer, ForeignKey("departments.id"))
+    score = Column(Float)
+    comment = Column(String, nullable=True)
+
+    department = relationship("Departments", back_populates="ratings", uselist=False)
+
+
+class Badges(Base):
+    __tablename__ = "badges"
+
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    name = Column(String)
+    # value = Column(Integer)
+
+    rating = relationship("RatingHistoryTeammate", back_populates="badge", uselist=False)
 
 
 # class BadgesHistory(Base):
@@ -96,4 +122,4 @@ class Departments(Base):
 #     score = Column(Float)
 #     teammate_id = Column(Integer, ForeignKey("teammates.id"))
 
-#     teammate = relationship("Teammates", back_populates="teammates", uselist=False)
+#     teammate = relationship("Teammates", back_populates="comments", uselist=False)
